@@ -1,0 +1,26 @@
+# 1. Usa una imagen base oficial de Node.js
+FROM node:20-alpine
+
+# 2. Establece el directorio de trabajo dentro del contenedor
+WORKDIR /usr/src/app
+
+# 3. Copia SOLO los archivos package.json y package-lock.json
+#    en esta capa del Dockerfile.
+COPY package*.json ./
+
+# 4. EJECUTA npm install DENTRO del contenedor.
+#    Esto descarga las dependencias y crea la carpeta node_modules
+#    directamente dentro del contenedor, en la capa actual.
+RUN npm install
+
+# 5. Copia el resto del código de la aplicación (archivos .js, etc.)
+#    al contenedor. Si tu carpeta local 'node_modules' existiera,
+#    esta instrucción la copiaría, pero es por eso que la instrucción
+#    'RUN npm install' se hace ANTES. Docker es inteligente.
+COPY . .
+
+# 6. Expone el puerto
+EXPOSE 3000
+
+# 7. Comando para iniciar la aplicación
+CMD [ "npm", "start" ]

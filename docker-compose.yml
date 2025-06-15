@@ -1,0 +1,36 @@
+version: '3.8' # Versión de la especificación de Docker Compose.
+services:
+  api-service:
+    # Le dice a Docker Compose que construya la imagen desde el Dockerfile en ./api-service
+    build: ./api-service
+    # Mapea el puerto 3001 del contenedor al puerto 3001 de tu máquina local.
+    # Esto te permitirá acceder a la API directamente desde tu navegador o Postman en http://localhost:3001.
+    ports:
+      - "3001:3001"
+    # Asigna este servicio a una red para permitir la comunicación con otros servicios.
+    networks:
+      - app-network
+
+  frontend-service:
+    # Construye la imagen desde el Dockerfile en ./frontend-service
+    build: ./frontend-service
+    # Mapea el puerto 3000 del contenedor al puerto 3000 de tu máquina local.
+    # Aquí es donde accederás a tu aplicación web en http://localhost:3000.
+    ports:
+      - "3000:3000"
+    # Configura una variable de entorno dentro del contenedor del frontend.
+    # 'api-service' se resuelve automáticamente al nombre de host del contenedor del api-service
+    # dentro de la misma red de Docker Compose.
+    environment:
+      API_URL: http://api-service:3001/data
+    # Asigna este servicio a la misma red que el api-service.
+    networks:
+      - app-network
+    # Asegura que el api-service se inicie antes que el frontend-service.
+    depends_on:
+      - api-service
+
+# Define las redes que usarán tus servicios.
+networks:
+  app-network:
+    driver: bridge # Un tipo de red que permite a los contenedores comunicarse entre sí.

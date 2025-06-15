@@ -1,0 +1,26 @@
+# Usa una imagen base oficial de Node.js.
+# La variante 'alpine' es más ligera y eficiente.
+FROM node:20-alpine
+
+# Establece el directorio de trabajo dentro del contenedor.
+# Aquí es donde se copiarán y ejecutarán tus archivos de aplicación.
+WORKDIR /usr/src/app
+
+# Copia los archivos package.json y package-lock.json.
+# Esto se hace primero para aprovechar la caché de Docker.
+# Si estos archivos no cambian, Docker no tiene que reinstalar las dependencias en compilaciones futuras.
+COPY package*.json ./
+
+# Instala las dependencias del proyecto.
+RUN npm install
+
+# Copia el resto del código de la aplicación al directorio de trabajo del contenedor.
+COPY . .
+
+# Expone el puerto en el que la aplicación Express estará escuchando.
+# Esto es principalmente para documentación e informa a Docker que este puerto será usado.
+EXPOSE 3001
+
+# Comando para iniciar la aplicación cuando el contenedor se ejecute.
+# Esto se mapea con el script "start" definido en tu package.json.
+CMD [ "npm", "start" ]

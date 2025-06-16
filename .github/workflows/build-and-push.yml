@@ -39,7 +39,7 @@ jobs:
           push: true # Indica que la imagen debe ser subida
           tags: | # Define las etiquetas para la imagen
             ghcr.io/${{ github.repository }}/api-service:latest
-            ghcr.io/${{ github.repository }}/api-service:${{ github.sha }} # Etiqueta con el SHA del commit para versiones únicas
+            ghcr.io/${{ github.repository }}/api-service:${{ github.sha }}
           cache-from: type=gha # Usa la caché de GitHub Actions para builds más rápidos
           cache-to: type=gha,mode=max # Guarda la caché para futuras builds
 

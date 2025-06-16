@@ -1,0 +1,73 @@
+name: Build and Push Docker Images
+
+# Define cuándo se ejecutará este workflow.
+on:
+  push:
+    branches:
+      - main # Se activa cada vez que se hace un push a la rama 'main'
+  pull_request:
+    branches:
+      - main # Se activa cuando se abre o actualiza un Pull Request a la rama 'main'
+
+# Permisos necesarios para que el GITHUB_TOKEN pueda escribir en GHCR
+permissions:
+  contents: read # Permite leer el código del repositorio
+  packages: write # ¡Crucial! Permite escribir imágenes en el GitHub Container Registry
+
+jobs:
+  build-api-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # Clona tu repositorio
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push API Service Image
+        id: build-api
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api-service # Ruta al Dockerfile (relativa a la raíz del repo)
+          push: true # Indica que la imagen debe ser subida
+          tags: | # Define las etiquetas para la imagen
+            ghcr.io/${{ github.repository }}/api-service:latest
+            ghcr.io/${{ github.repository }}/api-service:${{ github.sha }} # Etiqueta con el SHA del commit para versiones únicas
+          cache-from: type=gha # Usa la caché de GitHub Actions para builds más rápidos
+          cache-to: type=gha,mode=max # Guarda la caché para futuras builds
+
+  build-frontend-service:
+    runs-on: ubuntu-latest
+    needs: build-api-service # Asegura que este job se ejecute DESPUÉS de build-api-service
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Frontend Service Image
+        id: build-frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend-service # Ruta al Dockerfile (relativa a la raíz del repo)
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/frontend-service:latest
+            ghcr.io/${{ github.repository }}/frontend-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

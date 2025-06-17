@@ -21,6 +21,25 @@ COPY . .
 # Esto es principalmente para documentación e informa a Docker que este puerto será usado.
 EXPOSE 3001
 
-# Comando para iniciar la aplicación cuando el contenedor se ejecute.
-# Esto se mapea con el script "start" definido en tu package.json.
+# ---- Configuración para Migraciones y Seeds en tiempo de ejecución ----
+
+# Copia knexfile.js y las carpetas de migraciones y seeds
+COPY knexfile.js ./
+COPY migrations ./migrations
+COPY seeds ./seeds
+
+# Crea un script de entrada que manejará la espera de la DB, migraciones y seeds
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Define las variables de entorno para la conexión a la DB que el entrypoint.sh usará.
+# Estos serán placeholders, los valores reales se inyectarán desde Docker Compose o Kubernetes.
+ENV DB_HOST=db_host_placeholder \
+    DB_USER=user \
+    DB_PASSWORD=password \
+    DB_NAME=mydatabase \
+    DB_PORT=3306
+
+# Script de entrada al iniciar el contenedor.
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD [ "npm", "start" ]

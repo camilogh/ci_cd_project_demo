@@ -7,6 +7,8 @@ exports.seed = function (knex) {
       return knex('items').insert([
         { name: 'Item from DB A', value: 100 },
         { name: 'Item from DB B', value: 250 },
+        { name: 'Item from DB z', value: 440 },
+        { name: 'Item from DB h', value: 780 },
         { name: 'Item from DB C', value: 150 }
       ]);
     });

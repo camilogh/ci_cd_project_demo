@@ -88,16 +88,18 @@ jobs:
           token: ${{ secrets.MANIFESTS_REPO_PAT }}
           ref: main
 
-      - name: Update Image Tags in Helm Values
-        # Asumiendo que tus manifiestos usan un Helm Chart con un archivo values.yaml
-        # La ruta al archivo values.yaml dentro del repositorio de manifiestos
-        # Por ejemplo: charts/my-app/values.yaml
+      - name: Install yq
+        # Método recomendado para instalar yq en Ubuntu, ya que snap está preinstalado
         run: |
-          sed -i "s|image: ghcr.io/${{ github.repository }}/api-service:.*|image: ghcr.io/${{ github.repository }}/api-service:${{ github.sha }}|" demo-project-app/values.yaml
-          sed -i "s|image: ghcr.io/${{ github.repository }}/frontend-service:.*|image: ghcr.io/${{ github.repository }}/frontend-service:${{ github.sha }}|" demo-project-app/values.yaml
+          sudo snap install yq --classic
+
+      - name: Update Image Tags in Helm Values with yq
+        run: |
+          yq -i '.apiService.image.tag = "${{ github.sha }}"' demo-project-app/values.yaml
+          yq -i '.frontendService.image.tag = "${{ github.sha }}"' demo-project-app/values.yaml
 
         env:
-          GITHUB_SHA: ${{ github.sha }} # Pasar el SHA como variable de entorno si es necesario, aunque aquí se usa directamente.
+          GITHUB_SHA: ${{ github.sha }}
 
       - name: Commit and Push Changes
         # Configura el usuario y el correo para el commit

@@ -39,6 +39,7 @@ app.get('/data', async (req, res) => {
         html += `
               </ul>
               <p>Puedes refrescar esta página para ver la solicitud a la API.</p>
+              <p>Página demo de proceso CI/CD</p>
           </body>
           </html>
         `;

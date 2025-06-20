@@ -71,3 +71,39 @@ jobs:
             ghcr.io/${{ github.repository }}/frontend-service:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  update-argocd-manifests:
+    runs-on: ubuntu-latest
+    # Este job necesita que los jobs de build hayan terminado exitosamente
+    needs: [build-api-service, build-frontend-service]
+    steps:
+      - name: Checkout ArgoCD Manifests Repo
+        # Es crucial que uses un token con permisos para clonar y push al repositorio de manifiestos.
+        # Si el repositorio de manifiestos es privado y diferente de este, necesitarás un Personal Access Token (PAT)
+        # almacenado como un secreto de GitHub (ej. ARGO_MANIFESTS_TOKEN)
+        # y configurar 'persist-credentials: false' si usas GITHUB_TOKEN para este repo.
+        uses: actions/checkout@v4
+        with:
+          repository: https://github.com/camilogh/manifiestos_ci_cd_project_demo.git
+          token: ${{ secrets.MANIFESTS_REPO_PAT }}
+          ref: main
+
+      - name: Update Image Tags in Helm Values
+        # Asumiendo que tus manifiestos usan un Helm Chart con un archivo values.yaml
+        # La ruta al archivo values.yaml dentro del repositorio de manifiestos
+        # Por ejemplo: charts/my-app/values.yaml
+        run: |
+          sed -i "s|image: ghcr.io/${{ github.repository }}/api-service:.*|image: ghcr.io/${{ github.repository }}/api-service:${{ github.sha }}|" demo-project-app/values.yaml
+          sed -i "s|image: ghcr.io/${{ github.repository }}/frontend-service:.*|image: ghcr.io/${{ github.repository }}/frontend-service:${{ github.sha }}|" demo-project-app/values.yaml
+
+        env:
+          GITHUB_SHA: ${{ github.sha }} # Pasar el SHA como variable de entorno si es necesario, aunque aquí se usa directamente.
+
+      - name: Commit and Push Changes
+        # Configura el usuario y el correo para el commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m " chore(release): update image tags to ${{ github.sha }} [skip ci] " # [skip ci] evita que este commit dispare otro workflow
+          git push

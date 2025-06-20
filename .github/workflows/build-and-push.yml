@@ -84,7 +84,7 @@ jobs:
         # y configurar 'persist-credentials: false' si usas GITHUB_TOKEN para este repo.
         uses: actions/checkout@v4
         with:
-          repository: https://github.com/camilogh/manifiestos_ci_cd_project_demo.git
+          repository: camilogh/manifiestos_ci_cd_project_demo
           token: ${{ secrets.MANIFESTS_REPO_PAT }}
           ref: main
 

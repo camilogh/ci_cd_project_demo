@@ -31,7 +31,7 @@ app.get('/data', async (req, res) => {
               </style>
           </head>
           <body>
-              <h1>Listado de Datos Obtenidos de la API</h1>
+              <h1>Catálogo de productos Shopping Center</h1>
               <ul>`;
         apiData.forEach(item => {
             html += `<li><strong>ID:</strong> ${item.id}, <strong>Nombre:</strong> ${item.name}, <strong>Valor:</strong> ${item.value}</li>`;
